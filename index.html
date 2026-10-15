@@ -1,0 +1,767 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Calculadora de aquisição de usinas UFV e CGH · Lastro Capital">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}</style>
+<title>Calculadora de Usinas Lastro</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap">
+<style>
+/* Layout: cabeçalho de marca com monograma em marca d'água → premissas à esquerda, leitura do negócio à direita (empilha no celular).
+   Identidade Lastro Capital: preto #0a0a0a monocromático, Montserrat, filete acima dos títulos; variante clara #F2F2F2 com filete verde #043927. */
+:root{
+  --bg:#0a0a0a; --panel:#111111; --line:#262626; --line-soft:#181818;
+  --fg:#f2f2f2; --muted:#9b9b9b; --faint:#666666; --ink-inv:#0a0a0a;
+  --rule:#f2f2f2; --mark:#141414;
+  --good:#9edbc2; --warn:#d9c08a; --bad:#e3a093;
+  --bar:#f2f2f2; --bar2:#7a7a7a;
+  --font:"Montserrat",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){
+  --bg:#f2f2f2; --panel:#ffffff; --line:#d6d6d6; --line-soft:#e6e6e6;
+  --fg:#000000; --muted:#4d4d4d; --faint:#8a8a8a; --ink-inv:#f2f2f2;
+  --rule:#043927; --mark:#e6e6e6;
+  --good:#043927; --warn:#8a5a12; --bad:#9a3324;
+  --bar:#000000; --bar2:#043927; color-scheme:light}}
+:root[data-theme="light"]{
+  --bg:#f2f2f2; --panel:#ffffff; --line:#d6d6d6; --line-soft:#e6e6e6;
+  --fg:#000000; --muted:#4d4d4d; --faint:#8a8a8a; --ink-inv:#f2f2f2;
+  --rule:#043927; --mark:#e6e6e6;
+  --good:#043927; --warn:#8a5a12; --bad:#9a3324;
+  --bar:#000000; --bar2:#043927; color-scheme:light}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14.5px;line-height:1.55;margin:0;font-weight:400}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--font);text-wrap:balance;margin:0}
+.lbl{font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.num{font-variant-numeric:tabular-nums}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.wm,.wmc{display:block;height:auto;color:var(--fg)}
+.rule{display:block;width:44px;height:4px;background:var(--rule)}
+
+/* cabeçalho */
+.band{position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
+.band .mono{position:absolute;right:-90px;top:-40px;width:420px;height:auto;color:var(--mark);pointer-events:none}
+.band .wrap{position:relative;padding-block:26px 34px;display:flex;flex-direction:column;gap:34px}
+.brandrow{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.brandrow .wmc{width:150px}
+.brandrow .lbl{color:var(--faint)}
+.hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:end}
+.hero .lbl{display:block;margin-bottom:14px}
+.hero .rule{margin-bottom:16px}
+.hero h1{font-size:clamp(26px,3.8vw,42px);font-weight:700;letter-spacing:.02em;line-height:1.08;text-transform:uppercase;max-width:18ch}
+.hero p{color:var(--muted);max-width:58ch;margin:14px 0 0;font-weight:300;font-size:15px}
+.pick{display:flex;flex-direction:column;gap:8px;min-width:0}
+.pick select{background:var(--bg);border:1px solid var(--fg);padding:11px 38px 11px 14px;font-weight:600;font-size:15px;border-radius:0;min-width:260px;max-width:100%;appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,var(--fg) 50%),linear-gradient(135deg,var(--fg) 50%,transparent 50%);background-position:calc(100% - 18px) 52%,calc(100% - 12px) 52%;background-size:6px 6px;background-repeat:no-repeat}
+
+/* grade principal */
+main.wrap{padding-block:32px 56px;display:grid;grid-template-columns:330px minmax(0,1fr);gap:40px;align-items:start}
+aside{display:flex;flex-direction:column;gap:24px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);max-height:calc(100vh - 24px);overflow:auto;padding-right:6px}
+fieldset{border:0;border-top:1px solid var(--line);margin:0;padding:16px 0 0;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+legend{font-weight:600;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;padding:0 12px 0 0;color:var(--fg)}
+.f{display:flex;flex-direction:column;gap:5px;min-width:0}
+.f.w{grid-column:1/-1}
+.f label{font-size:12px;color:var(--muted);font-weight:400}
+.in{display:flex;align-items:center;border:1px solid var(--line);background:var(--panel);min-width:0}
+.in:focus-within{border-color:var(--fg)}
+.in input,.in select{background:transparent;border:0;padding:9px 10px;width:100%;min-width:0;font-size:14px;font-weight:500;font-variant-numeric:tabular-nums;outline:none;appearance:none}
+.in input:disabled{color:var(--faint)}
+.in i{font-style:normal;font-size:10.5px;color:var(--faint);padding-right:9px;white-space:nowrap;letter-spacing:.04em}
+.seg{display:flex;border:1px solid var(--line)}
+.seg button{flex:1;background:transparent;border:0;padding:9px 6px;cursor:pointer;font-size:12.5px;color:var(--muted);font-weight:500}
+.seg button:hover{color:var(--fg)}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--ink-inv);font-weight:600}
+.hint{font-size:11.5px;color:var(--faint);grid-column:1/-1;margin:-2px 0 0;font-weight:400}
+details{border-top:1px solid var(--line);padding-top:14px}
+details>summary{cursor:pointer;font-weight:600;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;list-style:none;display:flex;justify-content:space-between}
+details>summary::-webkit-details-marker{display:none}
+details>summary::after{content:"+";color:var(--muted);letter-spacing:0;font-size:14px}
+details[open]>summary::after{content:"–"}
+details fieldset{border-top:0;padding-top:12px}
+.reset{align-self:flex-start;background:transparent;border:1px solid var(--line);padding:8px 14px;cursor:pointer;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.reset:hover{border-color:var(--fg);color:var(--fg)}
+
+/* leitura */
+.read{display:flex;flex-direction:column;gap:44px;min-width:0}
+.headrow{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.terms{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--fg);border-bottom:1px solid var(--line)}
+.term{padding:18px 16px 20px 0;display:flex;flex-direction:column;gap:7px;min-width:0}
+.term+.term{padding-left:18px;border-left:1px solid var(--line)}
+.term:nth-child(n+4){border-top:1px solid var(--line)}
+.term:nth-child(4){padding-left:0;border-left:0}
+.term .v{font-weight:700;font-size:clamp(22px,2.7vw,31px);letter-spacing:-.01em;line-height:1.05;font-variant-numeric:tabular-nums}
+.term .s{font-size:11.5px;color:var(--muted);font-weight:400}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:2px 8px;border:1px solid currentColor;width:max-content;max-width:100%;font-weight:600;letter-spacing:.02em}
+.pill.good{color:var(--good)} .pill.warn{color:var(--warn)} .pill.bad{color:var(--bad)}
+.sec{display:flex;flex-direction:column;gap:16px;min-width:0}
+.sech{display:flex;justify-content:space-between;align-items:flex-end;gap:12px 24px;flex-wrap:wrap}
+.sech h2{font-size:16px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;display:flex;flex-direction:column;gap:12px}
+.sech h2::before{content:"";display:block;width:36px;height:3px;background:var(--rule)}
+.sech p{margin:0;color:var(--muted);font-size:12.5px;max-width:60ch;font-weight:300}
+.note{border-left:2px solid var(--rule);padding:10px 14px;font-size:12.5px;color:var(--muted);background:var(--panel);font-weight:400}
+.note b{color:var(--fg);font-weight:600}
+.chart{width:100%;min-width:0}
+.chart svg{display:block;width:100%;height:auto}
+.legend{display:flex;gap:20px;flex-wrap:wrap;font-size:11.5px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.legend i{display:inline-block;width:12px;height:12px}
+.tbl{overflow-x:auto;border-top:1px solid var(--line)}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{padding:9px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line-soft)}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--bg)}
+thead th{font-weight:600;color:var(--muted);font-size:10px;letter-spacing:.16em;text-transform:uppercase}
+td{font-variant-numeric:tabular-nums;font-weight:400}
+tr.em td{font-weight:600;color:var(--fg)}
+tr.sub td{color:var(--faint)}
+.sens td.base{background:var(--fg);color:var(--ink-inv);font-weight:700}
+.sens td.lo{color:var(--bad)} .sens td.hi{color:var(--good)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px}
+.split{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--line)}
+.split>div{padding:14px 14px 14px 0;display:flex;flex-direction:column;gap:5px;min-width:0}
+.split>div+div{padding-left:16px;border-left:1px solid var(--line)}
+.split .v{font-weight:700;font-size:21px;font-variant-numeric:tabular-nums}
+.split .s{font-size:11.5px;color:var(--muted)}
+.stack{display:flex;height:8px;width:100%;gap:2px}
+.stack i{display:block;height:100%}
+.meth{font-size:13px;color:var(--muted);display:grid;gap:10px;max-width:80ch;font-weight:300}
+.meth p{margin:0}
+.meth b{color:var(--fg);font-weight:600}
+
+footer{border-top:1px solid var(--line)}
+footer .wrap{padding-block:28px 40px;display:flex;flex-direction:column;gap:22px}
+footer .disc{font-size:11.5px;color:var(--faint);max-width:100ch;margin:0;font-weight:300}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:18px}
+.foot .wm{width:92px}
+.foot a{color:var(--muted);text-decoration:none;font-size:11px;letter-spacing:.24em;text-transform:uppercase;font-weight:500}
+.foot a:hover{color:var(--fg)}
+.foot .by{font-size:11px;color:var(--faint);letter-spacing:.04em}
+
+@media (max-width:980px){
+  main.wrap{grid-template-columns:minmax(0,1fr)}
+  .read{order:-1}
+  aside{position:static;max-height:none;overflow:visible;padding-right:0}
+  .two{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:640px){
+  .band .mono{width:200px;right:-96px;top:-20px}
+  .brandrow .lbl{display:none}
+  .hero{grid-template-columns:minmax(0,1fr)}
+  .pick select{min-width:0;width:100%}
+  .terms{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .term:nth-child(n+3){border-top:1px solid var(--line)}
+  .term:nth-child(odd){padding-left:0;border-left:0}
+  .term:nth-child(even){padding-left:14px;border-left:1px solid var(--line)}
+  .split{grid-template-columns:minmax(0,1fr)}
+  .split>div+div{padding-left:0;border-left:0;border-top:1px solid var(--line)}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+
+<header class="band">
+  <svg class="mono" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 642 694"><path fill="currentColor" fill-rule="evenodd" d="M97.5 692.9C71.8 689.6 51.3 679.5 32.9 661.1C9.4 637.5 -1.0 611.0 0.3 578.5C2.5 523.5 43.9 479.3 99.0 473.2C103.7 472.6 134.2 472.1 166.8 472.1C204.2 472.0 226.9 471.6 228.1 471.0C238.1 465.6 238.5 446.9 228.7 441.0C225.6 439.1 223.0 439.0 130.8 439.0L36.0 439.0L36.0 402.5L36.0 366.0L131.9 366.0C213.1 366.0 229.1 366.2 236.5 367.5C270.9 373.5 297.9 399.7 306.7 435.8C309.0 445.3 309.0 465.1 306.6 475.4C298.8 509.1 276.3 532.7 242.0 542.8C237.2 544.2 227.4 544.5 169.0 545.0L101.5 545.5L95.0 548.6C68.4 561.2 64.7 596.4 88.2 613.6C97.6 620.5 111.2 622.8 121.5 619.2C124.2 618.2 149.1 604.7 176.8 589.1C204.5 573.5 229.7 559.7 232.9 558.4C262.9 546.3 298.3 564.2 306.4 595.6C307.7 600.8 308.0 609.1 308.0 647.9L308.0 694.0L272.0 694.0L236.0 694.0L236.0 667.0C236.0 652.1 235.7 640.0 235.2 640.0C234.8 640.0 217.6 649.5 197.0 661.1C157.2 683.5 150.2 686.9 138.1 690.0C123.4 693.7 111.1 694.6 97.5 692.9ZM334.0 647.9C334.0 609.1 334.3 600.8 335.6 595.6C343.7 564.2 379.1 546.3 409.1 558.4C412.2 559.7 437.5 573.5 465.2 589.1C492.8 604.7 517.8 618.2 520.5 619.2C530.8 622.8 544.4 620.5 553.8 613.6C577.3 596.4 573.6 561.2 547.0 548.6L540.5 545.5L473.0 545.0C400.6 544.4 403.7 544.6 388.9 539.1C372.7 533.0 355.8 518.6 346.2 502.7C328.6 473.5 329.3 434.3 347.9 405.9C357.7 391.1 373.5 378.0 389.1 372.0C404.7 366.0 404.9 366.0 510.1 366.0L606.0 366.0L606.0 402.5L606.0 439.0L511.2 439.0C419.0 439.0 416.4 439.1 413.3 441.0C403.5 446.9 403.9 465.6 413.9 471.0C415.1 471.6 437.8 472.0 475.2 472.1C536.1 472.2 545.8 472.7 559.3 476.1C626.7 493.2 661.6 570.1 630.4 632.4C624.5 644.0 620.1 650.0 609.1 661.1C580.8 689.4 542.7 699.9 503.9 690.0C491.8 686.9 484.8 683.5 445.0 661.1C424.4 649.5 407.2 640.0 406.8 640.0C406.3 640.0 406.0 652.1 406.0 667.0L406.0 694.0L370.0 694.0L334.0 694.0L334.0 647.9ZM36.0 291.5L36.0 255.0L130.8 255.0C223.0 255.0 225.6 254.9 228.7 253.0C238.5 247.1 238.1 228.4 228.1 223.0C226.9 222.4 204.2 222.0 166.8 221.9C105.9 221.8 96.2 221.3 82.7 217.9C15.3 200.8 -19.6 123.9 11.6 61.6C17.5 50.0 21.9 44.0 32.9 32.9C61.2 4.6 99.3 -5.9 138.1 4.0C150.2 7.1 157.2 10.5 197.0 32.9C217.6 44.5 234.8 54.0 235.2 54.0C235.7 54.0 236.0 41.9 236.0 27.0L236.0 0.0L272.0 0.0L308.0 0.0L308.0 46.1C308.0 84.9 307.7 93.2 306.4 98.4C298.3 129.8 262.9 147.7 232.9 135.6C229.7 134.3 204.5 120.5 176.8 104.9C149.1 89.3 124.2 75.8 121.5 74.8C111.2 71.2 97.6 73.5 88.2 80.4C64.6 97.7 68.3 132.8 95.0 145.4L101.5 148.5L169.0 149.0C229.2 149.5 237.1 149.8 242.4 151.3C275.7 161.1 297.0 183.0 306.2 217.0C308.9 226.9 309.2 248.3 306.7 258.2C297.8 294.4 270.9 320.5 236.5 326.5C229.1 327.8 213.1 328.0 131.9 328.0L36.0 328.0L36.0 291.5ZM404.7 326.4C382.2 322.3 361.0 308.0 347.9 288.1C332.0 263.8 328.9 231.1 340.0 203.8C349.0 181.7 368.0 162.8 388.9 154.9C403.7 149.4 400.6 149.6 473.0 149.0L540.5 148.5L547.0 145.4C573.6 132.8 577.3 97.6 553.8 80.4C544.4 73.5 530.8 71.2 520.5 74.8C517.8 75.8 492.9 89.3 465.2 104.9C437.5 120.5 412.3 134.3 409.1 135.6C379.1 147.7 343.7 129.8 335.6 98.4C334.3 93.2 334.0 84.9 334.0 46.1L334.0 0.0L370.0 0.0L406.0 0.0L406.0 27.0C406.0 41.9 406.3 54.0 406.8 54.0C407.2 54.0 424.4 44.5 445.0 32.9C484.8 10.5 491.8 7.1 503.9 4.0C533.7 -3.6 563.5 0.9 590.1 17.2C599.7 23.0 617.4 40.0 623.3 49.1C653.0 94.8 646.8 153.1 608.2 190.2C589.6 208.1 568.5 218.0 543.0 220.8C538.3 221.4 507.8 221.9 475.2 221.9C437.8 222.0 415.1 222.4 413.9 223.0C403.9 228.4 403.5 247.1 413.3 253.0C416.4 254.9 419.0 255.0 511.2 255.0L606.0 255.0L606.0 291.5L606.0 328.0L509.2 327.9C430.8 327.8 411.0 327.6 404.7 326.4Z"/></svg>
+  <div class="wrap">
+    <div class="brandrow">
+      <a href="https://lastro.capital/" target="_blank" rel="noopener" aria-label="Lastro Capital"><svg class="wmc" aria-label="Lastro Capital" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="188 394 704 292"><path fill="currentColor" d="M 190 395.9 L 226.8 395.9 L 226.8 588.4 L 190 588.4 Z M 190 395.9  M 612.6 492.6 L 646.9 492.6 L 646.9 532.2 C 646.9 561.7 629.9 588.0 590.5 588.0 C 549.7 588.0 533.6 562.0 533.6 531.9 L 533.6 395.9 L 569.8 395.9 L 569.8 443.1 L 646.9 443.1 L 646.9 469.2 L 569.8 469.2 L 569.8 528.3 C 569.8 545.8 576.1 556.0 591.1 556.0 C 605.8 556.0 612.6 546.1 612.6 528.8 Z M 612.6 492.6  M 853.2 515.8 C 853.2 487.8 842.0 474.0 819.9 474.0 C 797.7 474.0 786.5 487.8 786.5 515.8 C 786.5 543.8 797.7 557.8 819.9 557.8 C 842.0 557.8 853.2 543.8 853.2 515.8 M 749.0 515.8 C 749.0 472.1 776.2 443.2 819.9 443.2 C 863.0 443.2 890 471.8 890 515.8 C 890 559.5 862.8 588.4 819.9 588.4 C 775.3 588.4 749.0 558.7 749.0 515.8  M 374.6 588.0 L 342.5 588.0 L 342.5 563.7 L 310.8 581.6 C 303.5 585.6 295.3 587.8 287.0 587.8 C 260.0 587.8 238.1 565.9 238.1 538.9 C 238.1 512.0 260.0 490.1 287.0 490.1 L 336.3 490.1 C 339.8 490.1 342.7 486.7 342.7 482.6 C 342.7 478.5 339.8 475.1 336.3 475.1 L 254.1 475.1 L 254.1 443.1 L 336.3 443.1 C 357.5 443.1 374.8 460.8 374.8 482.6 C 374.8 504.4 357.5 522.1 336.3 522.1 L 287.0 522.1 C 277.7 522.1 270.2 529.7 270.2 538.9 C 270.2 548.2 277.7 555.7 287.0 555.7 C 289.8 555.7 292.6 555.0 295.0 553.6 L 338.0 529.5 C 345.6 525.2 354.8 525.2 362.4 529.7 C 370.0 534.1 374.6 542.1 374.6 550.9 Z M 374.6 588.0  M 417.8 588.0 L 385.8 588.0 L 385.8 550.9 C 385.8 542.1 390.3 534.1 397.9 529.7 C 405.5 525.2 414.7 525.2 422.3 529.5 L 465.3 553.6 C 467.7 555.0 470.5 555.7 473.3 555.7 C 482.6 555.7 490.1 548.2 490.1 538.9 C 490.1 529.7 482.6 522.1 473.3 522.1 L 424.0 522.1 C 402.8 522.1 385.6 504.4 385.6 482.6 C 385.6 460.8 402.8 443.1 424.0 443.1 L 506.2 443.1 L 506.2 475.1 L 424.0 475.1 C 420.5 475.1 417.6 478.5 417.6 482.6 C 417.6 486.7 420.5 490.1 424.0 490.1 L 473.3 490.1 C 500.3 490.1 522.2 512.0 522.2 538.9 C 522.2 565.9 500.3 587.8 473.3 587.8 C 465.0 587.8 456.8 585.6 449.5 581.6 L 417.8 563.7 Z M 417.8 588.0  M 661.9 588.4 L 661.9 443.2 L 695.8 443.2 L 695.8 461.4 C 707.8 443.0 721.7 441.4 736.5 441.4 L 741.2 441.4 L 741.2 478.4 C 737.8 477.8 734.5 477.5 731.2 477.5 C 708.9 477.5 698.1 488.7 698.1 510.6 L 698.1 588.4 Z M 661.9 588.4  M 190 663.2 C 190 651.2 199.1 642.5 211.5 642.5 C 217.7 642.5 223.2 644.6 226.9 648.8 L 223.1 652.5 C 220.0 649.1 216.1 647.6 211.7 647.6 C 202.5 647.6 195.7 654.2 195.7 663.2 C 195.7 672.2 202.5 678.8 211.7 678.8 C 216.1 678.8 220.0 677.3 223.1 674.0 L 226.9 677.6 C 223.2 681.8 217.7 684.0 211.4 684.0 C 199.1 684.0 190 675.2 190 663.2  M 333.3 668.7 L 324.6 648.9 L 315.8 668.7 Z M 335.3 673.4 L 313.8 673.4 L 309.3 683.5 L 303.4 683.5 L 321.7 643 L 327.5 643 L 345.9 683.5 L 339.8 683.5 Z M 335.3 673.4  M 454.2 657.1 C 454.2 651.3 450.3 648.0 442.9 648.0 L 433.0 648.0 L 433.0 666.2 L 442.9 666.2 C 450.3 666.2 454.2 662.9 454.2 657.1 M 460.0 657.1 C 460.0 665.9 453.6 671.2 443.1 671.2 L 433.0 671.2 L 433.0 683.5 L 427.2 683.5 L 427.2 643 L 443.1 643 C 453.6 643 460.0 648.3 460.0 657.1  M 543.8 643 L 549.6 643 L 549.6 683.5 L 543.8 683.5 Z M 543.8 643  M 645.2 648.0 L 631.3 648.0 L 631.3 643 L 664.8 643 L 664.8 648.0 L 650.9 648.0 L 650.9 683.5 L 645.2 683.5 Z M 645.2 648.0  M 768.3 668.7 L 759.5 648.9 L 750.8 668.7 Z M 770.3 673.4 L 748.7 673.4 L 744.3 683.5 L 738.3 683.5 L 756.7 643 L 762.4 643 L 780.8 683.5 L 774.8 683.5 Z M 770.3 673.4  M 862.2 643 L 868.0 643 L 868.0 678.5 L 890 678.5 L 890 683.5 L 862.2 683.5 Z M 862.2 643 "/></svg></a>
+      <span class="lbl">Estrutura precede estratégia</span>
+    </div>
+    <div class="hero">
+      <div>
+        <span class="lbl">Valuation · Usinas UFV e CGH</span>
+        <span class="rule"></span>
+        <h1>Calculadora de aquisição de usinas</h1>
+        <p>Valor justo por fluxo de caixa descontado, retorno do comprador e composição do pagamento ao vendedor em cash e cotas do fundo.</p>
+      </div>
+      <div class="pick">
+        <label class="lbl" for="usina">Usina</label>
+        <select id="usina"></select>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <aside aria-label="Premissas">
+    <fieldset>
+      <legend>Geração</legend>
+      <div class="f w"><label>Fonte</label>
+        <div class="seg" id="tipo"><button type="button" data-v="UFV">UFV · solar</button><button type="button" data-v="CGH">CGH · hídrica</button></div></div>
+      <div class="f"><label for="mw">Potência instalada</label><div class="in"><input id="mw" type="number" step="0.01" min="0"><i>MW</i></div></div>
+      <div class="f"><label for="gf">Garantia física</label><div class="in"><input id="gf" type="number" step="0.001" min="0"><i>MWm</i></div></div>
+      <div class="f"><label for="redutor">Redutor da garantia</label><div class="in"><input id="redutor" type="number" step="0.5" min="0" max="100"><i>%</i></div></div>
+      <div class="f"><label for="degradacao">Degradação UFV</label><div class="in"><input id="degradacao" type="number" step="0.1" min="0"><i>% a.a.</i></div></div>
+      <p class="hint" id="gfLiq"></p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Receita e custos</legend>
+      <div class="f"><label for="tarifa">Tarifa compensável</label><div class="in"><input id="tarifa" type="number" step="0.01" min="0"><i>R$/MWh</i></div></div>
+      <div class="f"><label for="desagio">Deságio</label><div class="in"><input id="desagio" type="number" step="0.5" min="0" max="100"><i>%</i></div></div>
+      <div class="f"><label for="tusdg">TUSDg c/ impostos</label><div class="in"><input id="tusdg" type="number" step="0.01" min="0"><i>R$/kW</i></div></div>
+      <div class="f"><label for="custo">O&amp;M e despesas</label><div class="in"><input id="custo" type="number" step="0.1" min="0"><i>mil/MW·mês</i></div></div>
+      <p class="hint" id="ppaHint"></p>
+    </fieldset>
+
+    <fieldset>
+      <legend>Aquisição</legend>
+      <div class="f"><label for="dataAquisicao">Data de fechamento</label><div class="in"><select id="dataAquisicao"></select></div></div>
+      <div class="f"><label for="taxaReal">Taxa de desconto real</label><div class="in"><input id="taxaReal" type="number" step="0.5"><i>% a.a.</i></div></div>
+      <div class="f w"><label>Preço de aquisição</label>
+        <div class="seg" id="precoModo"><button type="button" data-v="justo">Valor justo calculado</button><button type="button" data-v="neg">Preço negociado</button></div></div>
+      <div class="f w" id="precoBox" hidden><label for="preco">Preço negociado</label><div class="in"><input id="preco" type="number" step="0.05" min="0"><i>R$ milhões</i></div></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Forma de pagamento</legend>
+      <div class="f"><label for="pctCash">Em cash</label><div class="in"><input id="pctCash" type="number" step="1" min="0" max="100"><i>%</i></div></div>
+      <div class="f"><label for="remCash">Custo do cash</label><div class="in"><input id="remCash" type="number" step="0.5"><i>IPCA+ %</i></div></div>
+      <div class="f"><label for="pctSeniorB">Sênior B nas cotas</label><div class="in"><input id="pctSeniorB" type="number" step="1" min="0" max="100"><i>%</i></div></div>
+      <div class="f"><label for="remSeniorB">Remuneração Sênior B</label><div class="in"><input id="remSeniorB" type="number" step="0.5"><i>IPCA+ %</i></div></div>
+      <div class="f"><label>Mezanino nas cotas</label><div class="in"><input id="pctMez" type="number" disabled><i>%</i></div></div>
+      <div class="f"><label for="remMezanino">Remuneração Mezanino</label><div class="in"><input id="remMezanino" type="number" step="0.5"><i>IPCA+ %</i></div></div>
+    </fieldset>
+
+    <details>
+      <summary>Premissas avançadas</summary>
+      <fieldset>
+        <div class="f w"><label>Tributação</label>
+          <div class="seg" id="dentroFundo"><button type="button" data-v="1">Dentro do fundo</button><button type="button" data-v="0">Lucro presumido</button></div></div>
+        <div class="f w"><label>Perpetuidade após 2045</label>
+          <div class="seg" id="perpetuidade"><button type="button" data-v="auto">Automática</button><button type="button" data-v="1">Sim</button><button type="button" data-v="0">Não</button></div></div>
+        <div class="f"><label for="redutorPerp">Redutor da perpetuidade</label><div class="in"><input id="redutorPerp" type="number" step="5" min="0" max="100"><i>%</i></div></div>
+        <div class="f"><label for="gReal">Crescimento real (g)</label><div class="in"><input id="gReal" type="number" step="0.5"><i>% a.a.</i></div></div>
+        <div class="f"><label for="divida">Dívida da SPE</label><div class="in"><input id="divida" type="number" step="0.1" min="0"><i>R$ mi</i></div></div>
+        <div class="f"><label for="dataFinal">Vencimento da dívida</label><div class="in"><input id="dataFinal" type="month"></div></div>
+        <div class="f w"><label>Dívida no fechamento</label>
+          <div class="seg" id="prepagamento"><button type="button" data-v="0">Assumir</button><button type="button" data-v="1">Pré-pagar</button></div></div>
+        <p class="hint">Dívida corrigida pelo CDI e amortizada em parcelas mensais iguais até o vencimento.</p>
+      </fieldset>
+    </details>
+    <button class="reset" id="reset" type="button">Restaurar premissas da usina</button>
+  </aside>
+
+  <section class="read" aria-live="polite">
+    <div>
+      <div class="headrow"><span class="lbl" id="headLbl"></span><span class="pill" id="ppaPill" hidden></span></div>
+      <div class="terms" id="terms"></div>
+    </div>
+
+    <div class="sec">
+      <div class="sech"><h2>Dividendos e custo das cotas</h2>
+        <p>Por ano, em R$ mil nominais, a partir do fechamento. A linha mostra a remuneração devida às cotas Sênior A (cash), Sênior B e Mezanino.</p></div>
+      <div class="chart" id="chart"></div>
+      <div class="legend"><span><i style="background:var(--bar)"></i>Dividendos distribuídos</span><span><i style="background:var(--bar2);height:2px"></i>Remuneração das cotas</span><span id="cov"></span></div>
+    </div>
+
+    <div class="two">
+      <div class="sec">
+        <div class="sech"><h2>Sensibilidade do valor</h2><p>Valor do equity em R$ milhões por taxa real e deságio.</p></div>
+        <div class="tbl"><table class="sens" id="sensA"></table></div>
+      </div>
+      <div class="sec">
+        <div class="sech"><h2>Preço × retorno</h2><p>TIR real do comprador conforme o preço pago.</p></div>
+        <div class="tbl"><table class="sens" id="sensB"></table></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sech"><h2>Pagamento ao vendedor</h2><p>Quanto o usineiro recebe em cash e em cotas, e o retorno que essa composição entrega.</p></div>
+      <div class="stack" id="stack"></div>
+      <div class="split" id="split"></div>
+      <div class="note" id="sellerNote"></div>
+    </div>
+
+    <div class="sec">
+      <div class="sech"><h2>Projeção anual</h2><p>R$ mil nominais. 2026 considera set–dez.</p></div>
+      <div class="tbl"><table id="proj"></table></div>
+    </div>
+
+    <div class="sec">
+      <div class="sech"><h2>Como o valor é calculado</h2></div>
+      <div class="meth">
+        <p><b>Geração.</b> Garantia física líquida do redutor × horas do período. UFVs perdem a degradação anual a cada janeiro.</p>
+        <p><b>Receita.</b> Tarifa compensável × (1 − deságio), corrigida pelo IPCA a cada ano. TUSDg e despesas também sobem com o IPCA.</p>
+        <p><b>Tributos.</b> Dentro do fundo, PIS/COFINS e IRPJ/CSLL presumidos incidem até nov/26 e zeram a partir de dez/26. No lucro presumido, a receita líquida de TUSDg paga PIS/COFINS em 2026 e a transição de CBS/IBS de 8,91% (2027) a 26,5% (2033 em diante), mais IRPJ e CSLL sobre bases de 8% e 12%.</p>
+        <p><b>Valor.</b> FCFF anual (EBIT − IR/CSLL ± capital de giro) descontado à taxa real somada ao IPCA de longo prazo, de set/26 a 2045. A perpetuidade, ligada por padrão em CGHs, aplica o redutor sobre o fluxo de 2045. Equity = valor da firma − dívida.</p>
+        <p><b>Retorno do comprador.</b> Paga o preço no mês de fechamento e recebe os dividendos dali em diante, limitados ao lucro acumulado e ao caixa acima do mínimo de R$ 20 mil. Não inclui valor residual em 2045.</p>
+        <p><b>Retorno do vendedor.</b> Recebe a parcela em cash no fechamento e a remuneração mensal das cotas Sênior B e Mezanino até 2045. O principal das cotas não é resgatado dentro do horizonte.</p>
+        <p><b>Macro.</b> IPCA de 5,1% em 2026, 4,0% em 2027 e 4,0% a.a. em diante; CDI de 13,5% caindo a 10% a partir de 2029. Database ago/26.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p class="disc">Esta calculadora apoia a tomada de decisão sobre aquisições de usinas com uma visão estruturada de cenários e projeções. As premissas refletem estimativas no momento da elaboração e podem variar com mudanças macroeconômicas, setoriais e específicas de cada ativo. Os números não são previsões nem garantias de resultado e têm caráter informativo e indicativo.</p>
+    <div class="foot">
+      <svg class="wm" aria-label="lastro" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="188 442 704 196"><path fill="currentColor" d="M 190 443.7 L 226.8 443.7 L 226.8 636.2 L 190 636.2 Z M 190 443.7  M 612.6 540.4 L 646.9 540.4 L 646.9 580.0 C 646.9 609.5 629.9 635.8 590.5 635.8 C 549.7 635.8 533.6 609.8 533.6 579.7 L 533.6 443.7 L 569.8 443.7 L 569.8 490.9 L 646.9 490.9 L 646.9 517.0 L 569.8 517.0 L 569.8 576.1 C 569.8 593.6 576.1 603.8 591.1 603.8 C 605.8 603.8 612.6 593.9 612.6 576.6 Z M 612.6 540.4  M 853.2 563.6 C 853.2 535.6 842.0 521.8 819.9 521.8 C 797.7 521.8 786.5 535.6 786.5 563.6 C 786.5 591.6 797.7 605.6 819.9 605.6 C 842.0 605.6 853.2 591.6 853.2 563.6 M 749.0 563.6 C 749.0 519.9 776.2 491.0 819.9 491.0 C 863.0 491.0 890 519.6 890 563.6 C 890 607.3 862.8 636.2 819.9 636.2 C 775.3 636.2 749.0 606.5 749.0 563.6  M 374.6 635.8 L 342.5 635.8 L 342.5 611.5 L 310.8 629.4 C 303.5 633.4 295.3 635.6 287.0 635.6 C 260.0 635.6 238.1 613.7 238.1 586.7 C 238.1 559.8 260.0 537.9 287.0 537.9 L 336.3 537.9 C 339.8 537.9 342.7 534.5 342.7 530.4 C 342.7 526.3 339.8 522.9 336.3 522.9 L 254.1 522.9 L 254.1 490.8 L 336.3 490.8 C 357.5 490.8 374.8 508.6 374.8 530.4 C 374.8 552.2 357.5 569.9 336.3 569.9 L 287.0 569.9 C 277.7 569.9 270.2 577.5 270.2 586.7 C 270.2 596.0 277.7 603.5 287.0 603.5 C 289.8 603.5 292.6 602.8 295.0 601.4 L 338.0 577.3 C 345.6 573 354.8 573.0 362.4 577.5 C 370.0 581.9 374.6 589.9 374.6 598.7 Z M 374.6 635.8  M 417.8 635.8 L 385.8 635.8 L 385.8 598.7 C 385.8 589.9 390.3 581.9 397.9 577.5 C 405.5 573.0 414.7 573 422.3 577.3 L 465.3 601.4 C 467.7 602.8 470.5 603.5 473.3 603.5 C 482.6 603.5 490.1 596.0 490.1 586.7 C 490.1 577.5 482.6 569.9 473.3 569.9 L 424.0 569.9 C 402.8 569.9 385.6 552.2 385.6 530.4 C 385.6 508.6 402.8 490.8 424.0 490.8 L 506.2 490.8 L 506.2 522.9 L 424.0 522.9 C 420.5 522.9 417.6 526.3 417.6 530.4 C 417.6 534.5 420.5 537.9 424.0 537.9 L 473.3 537.9 C 500.3 537.9 522.2 559.8 522.2 586.7 C 522.2 613.7 500.3 635.6 473.3 635.6 C 465.0 635.6 456.8 633.4 449.5 629.4 L 417.8 611.5 Z M 417.8 635.8  M 661.9 636.2 L 661.9 491.0 L 695.8 491.0 L 695.8 509.2 C 707.8 490.8 721.7 489.2 736.5 489.2 L 741.2 489.2 L 741.2 526.2 C 737.8 525.6 734.5 525.3 731.2 525.3 C 708.9 525.3 698.1 536.5 698.1 558.4 L 698.1 636.2 Z M 661.9 636.2 "/></svg>
+      <span class="by">Elaborado por José Vitor Wambier</span>
+      <a href="https://lastro.capital/" target="_blank" rel="noopener">lastro.capital</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Motor de cálculo — espelha as abas "Cockpit - Calculadora" e "Calculadora"
+// de Valuations_Usinas_VRUN.xlsx (mensal set/26–dez/31, anual 2032–2045).
+(function (root) {
+  const IBS_FACT = [1, 0.3, 0]; // Cockpit fundo E77:G77 (cenários 1,2,3)
+  const IR_FACT = [1, 1, 0];    // Cockpit fundo E78:G78
+
+  function irr(cfs) {
+    // Excel IRR: zeros à esquerda não alteram o resultado
+    let lo = -0.99, hi = 10;
+    const npv = r => cfs.reduce((s, c, i) => s + c / Math.pow(1 + r, i), 0);
+    let flo = npv(lo), fhi = npv(hi);
+    if (!isFinite(flo) || !isFinite(fhi) || flo * fhi > 0) return null;
+    for (let k = 0; k < 200; k++) {
+      const mid = (lo + hi) / 2, fm = npv(mid);
+      if (Math.abs(fm) < 1e-7) return mid;
+      if (fm * flo > 0) { lo = mid; flo = fm; } else { hi = mid; }
+    }
+    return (lo + hi) / 2;
+  }
+
+  function ym(s) { const [y, m] = s.split('-').map(Number); return y * 12 + (m - 1); }
+
+  function run(inp, M) {
+    const A = M.ann, Mo = M.mon;
+    const years = A.year;                 // 2026..2045
+    const NY = years.length, NM = Mo.date.length;
+    const yIdx = y => y - years[0];
+
+    // ---------- Cockpit ----------
+    const isUFV = inp.tipo === 'UFV';
+    const gf = inp.gf * (1 - inp.redutor);
+    const deg = isUFV ? inp.degradacao : 0;
+    const ppa = inp.tarifa * (1 - inp.desagio);
+    const opexM0 = (isUFV ? inp.custoUFV : inp.custoCGH) * -inp.mw * 1000;
+    const debt0 = inp.divida * 1e6;
+    const endDebt = ym(inp.dataFinal);
+    const startM = ym(Mo.date[0]);
+    const database = startM - 1;          // Database = mês anterior ao 1º mês
+    const prazo = endDebt - database;     // DATEDIF(C2,C27,"m")
+    const amortM = prazo > 0 ? -debt0 / prazo : 0;
+    const acq = ym(inp.dataAquisicao);
+    const ipcaLast = A.ipca[NY - 1];
+    const rNom = (1 + inp.taxaReal) * (1 + ipcaLast) - 1;
+    const perpFlag = inp.perpetuidade == null ? (isUFV ? 0 : 1) : (inp.perpetuidade ? 1 : 0);
+    const gNom = (1 + inp.gReal) * (1 + ipcaLast) - 1;
+
+    // ---------- séries anuais de preço/custos ----------
+    const price = [], tusd = [], opex = [], cxMin = [], fIpca = [];
+    for (let i = 0; i < NY; i++) {
+      price[i] = i === 0 ? ppa : price[i - 1] * (1 + A.ipca[i]);
+      tusd[i] = i === 0 ? inp.tusdg : tusd[i - 1] * (1 + A.ipca[i]);
+      opex[i] = i === 0 ? opexM0 : opex[i - 1] * (1 + A.ipca[i]);
+      cxMin[i] = i === 0 ? 20000 : cxMin[i - 1] * (1 + A.ipca[i]);
+      fIpca[i] = i === 0 ? 1 : fIpca[i - 1] / (1 + A.ipca[i]);
+    }
+    const scen = (mo, monthly, y) => {
+      if (inp.dentroFundo !== 1) return 1;
+      if (monthly && y === 2026 && mo <= 11) return 1; // AB40:AD40 = 1 (fixo)
+      if (!monthly && y === 2026) return 1;            // F40 = 1
+      return 3;                                        // Cockpit fundo C76 (pós-fundo)
+    };
+
+    // ---------- período mensal ----------
+    const m = [];
+    let gfm = gf, debt = debt0, NCGprev = null, LA = 0, cum58 = 0, cumDiv = 0, cash = 0;
+    for (let k = 0; k < NM; k++) {
+      const [y, mo] = Mo.date[k].split('-').map(Number);
+      const yi = yIdx(y), mIdx = ym(Mo.date[k]);
+      if (k > 0 && mo === 1) gfm = gfm * (1 - deg);
+      const hours = 24 * Mo.days[k];
+      const energia = gfm * hours;
+      const rec = price[yi] * energia;
+      const tus = -tusd[yi] * inp.mw * 1000;
+      const rt = rec + tus;
+      const s = scen(mo, true, y);
+      const aliq = (A.ibs[yi] + A.pis[yi]) * IBS_FACT[s - 1];
+      const ded = -aliq * rt;
+      const rl = rt + ded;
+      const ebitda = rl + opex[yi];
+      // dívida
+      const cdiP = Math.pow(1 + Mo.cdi[k], Mo.bdays[k] / 252) - 1;
+      const bop = debt;
+      const juros = (inp.indexador === 'CDI' ? cdiP : 0) * bop; // linha 17 vazia na planilha
+      const a183 = mIdx <= endDebt ? amortM : 0;
+      const a182 = mIdx < acq ? a183 : (mIdx === acq ? -bop : 0);
+      const a181 = inp.prepagamento ? a182 : a183;
+      const pag = a181 - juros;
+      debt = bop + juros + pag;
+      const aporte = inp.prepagamento ? -pag : 0;
+      const irpj = 0.08 * (-0.24 * IR_FACT[s - 1]) * rt;
+      const csll = 0.12 * (-0.09 * IR_FACT[s - 1]) * rt;
+      const ebt = ebitda - juros;
+      const ni = ebt + irpj + csll;
+      const daily = rt / Mo.days[k];
+      const NCG = 30 * daily - 45 * daily;
+      const dNCG = NCGprev === null ? 0 : -(NCG - NCGprev);
+      NCGprev = NCG;
+      const fco = ebitda + irpj + csll + dNCG;
+      const pre = fco + aporte + pag;
+      LA += ni;
+      cum58 += pre;
+      m.push({ y, mo, mIdx, energia, rec, tus, ded, rl, opex: opex[yi], ebitda, juros, irpj, csll, ni, dNCG, fco, pre, pag, aporte, LA, cum58, folga: cum58 - cxMin[yi], NCG, debt });
+    }
+
+    // ---------- período anual 2032+ ----------
+    const firstAnn = years.indexOf(2032);
+    const ann = [];
+    let gfa = gfm, NCGa = NCGprev, debtA = debt;
+    for (let i = firstAnn; i < NY; i++) {
+      const y = years[i];
+      gfa = gfa * (1 - deg);
+      const energia = gfa * 24 * A.days[i];
+      const rec = price[i] * energia;
+      const tus = -tusd[i] * inp.mw * 1000 * 12;
+      const rt = rec + tus;
+      const s = scen(null, false, y);
+      const fundoOp = 1;
+      const aliq = (A.ibs[i] + A.pis[i]) * (fundoOp === 1 ? IBS_FACT[s - 1] : 1);
+      const ded = -aliq * rt;
+      const rl = rt + ded;
+      const opx = opex[i] * 12;
+      const ebitda = rl + opx;
+      const cdiP = Math.pow(1 + A.cdi[i], A.bdays[i] / 252) - 1;
+      const bop = debtA;
+      const juros = (inp.indexador === 'CDI' ? cdiP : 0) * bop;
+      let months = 0; for (let mo = 1; mo <= 12; mo++) if (y * 12 + mo - 1 <= endDebt) months++;
+      const a183 = amortM * months;
+      const a181 = inp.prepagamento ? 0 : a183;
+      const pag = a181 - juros;
+      debtA = bop + juros + pag;
+      const aporte = inp.prepagamento ? -pag : 0;
+      const irpj = 0.08 * (-0.24 * IR_FACT[s - 1]) * rt;
+      const csll = 0.12 * (-0.09 * IR_FACT[s - 1]) * rt;
+      const ni = ebitda - juros + irpj + csll;
+      const daily = rt / A.days[i];
+      const NCG = 30 * daily - 45 * daily;
+      const dNCG = -(NCG - NCGa); NCGa = NCG;
+      const fco = ebitda + irpj + csll + dNCG;
+      const pre = fco + aporte + pag;
+      ann.push({ y, i, energia, rec, tus, ded, rl, opex: opx, ebitda, juros, irpj, csll, ni, dNCG, fco, pre });
+    }
+
+    // ---------- dividendos (linhas 58–63) ----------
+    // folga mínima olha todos os períodos futuros (mensal até dez/31 + anual)
+    let c58 = m.length ? m[m.length - 1].cum58 : 0;
+    ann.forEach(a => { c58 += a.pre; a.cum58 = c58; a.folga = c58 - cxMin[a.i]; });
+    let LAa = m.length ? m[m.length - 1].LA : 0;
+    ann.forEach(a => { LAa += a.ni; a.LA = LAa; });
+    const annFolga = ann.map(a => a.folga);
+    // K60 (2031 anual) = folga de dez/31
+    const k60 = m[m.length - 1].folga;
+    const suffixMinAnn = [];
+    for (let j = ann.length - 1, mn = Infinity; j >= 0; j--) { mn = Math.min(mn, annFolga[j]); suffixMinAnn[j] = mn; }
+    const minAnnAll = Math.min(k60, ann.length ? suffixMinAnn[0] : Infinity);
+    const suffixMinM = [];
+    for (let j = m.length - 1, mn = Infinity; j >= 0; j--) { mn = Math.min(mn, m[j].folga); suffixMinM[j] = mn; }
+    let paid = 0;
+    m.forEach((r, j) => {
+      const fmin = Math.min(suffixMinM[j], minAnnAll);
+      let d = 0;
+      if (r.ni > 0 && r.pre > 0 && r.cum58 - paid > 0) d = Math.max(0, Math.min(r.LA - paid, fmin - paid));
+      r.div = d; paid += d;
+    });
+    ann.forEach((r, j) => {
+      const fmin = suffixMinAnn[j];
+      let d = 0;
+      if (r.ni > 0 && r.pre > 0 && r.cum58 - paid > 0) d = Math.max(0, Math.min(r.LA - paid, fmin - paid));
+      r.div = d; paid += d;
+    });
+
+    // ---------- consolidação anual 2026..2045 ----------
+    const Y = years.map((y, i) => {
+      if (y < 2032) {
+        const rs = m.filter(r => r.y === y);
+        const sum = f => rs.reduce((s, r) => s + r[f], 0);
+        return { y, i, energia: sum('energia'), rec: sum('rec'), tus: sum('tus'), ded: sum('ded'), rl: sum('rl'),
+          opex: rs.reduce((s, r) => s + r.opex, 0), ebitda: sum('ebitda'), juros: sum('juros'), irpj: sum('irpj'), csll: sum('csll'),
+          ni: sum('ni'), dNCG: sum('dNCG'), fco: sum('fco'), div: sum('div'), months: rs.length };
+      }
+      return Object.assign({ months: 12 }, ann[i - firstAnn]);
+    });
+
+    // ---------- FCFF ----------
+    const mon2026 = m.filter(r => r.y === years[0]).length; // 4 meses
+    const per0 = (mon2026 - 1) / 12;                        // DATEDIF(set/26, dez/26) = 3 → 0,25
+    let pvExp = 0;
+    Y.forEach((r, i) => {
+      r.fcff = r.ebitda + r.irpj + r.csll + r.dNCG;
+      r.periodo = per0 + i;
+      r.fd = 1 / Math.pow(1 + rNom, r.periodo);
+      r.pv = r.fd * r.fcff;
+      pvExp += r.pv;
+    });
+    const last = Y[NY - 1];
+    const perpVal = last.fcff * (1 + gNom) / (rNom - gNom) * inp.redutorPerp * perpFlag;
+    const pvPerp = perpVal * last.fd;
+    const ev = pvExp + pvPerp;
+    const equity = ev - debt0;
+    const ebitda27 = Y[yIdx(2027)].ebitda;
+
+    // ---------- retorno da aquisição (comprador) ----------
+    const preco = (inp.preco != null ? inp.preco : equity / 1e6) * 1e6;
+    const acqYear = Math.floor(acq / 12);
+    const buyer = Y.map(() => ({ div: 0, pag: 0 }));
+    m.forEach(r => {
+      const i = yIdx(r.y);
+      if (r.mIdx >= acq) buyer[i].div += r.div;
+      if (r.mIdx === acq) buyer[i].pag -= preco;
+    });
+    ann.forEach(r => {
+      const dec = r.y * 12 + 11;
+      if (dec >= acq) buyer[r.i].div += r.div;
+      if (dec === acq) buyer[r.i].pag -= preco;
+    });
+    const bNom = buyer.map(b => b.div + b.pag);
+    const bReal = bNom.map((v, i) => v * fIpca[i]);
+    const paybackFrom = (arr, fromYear) => {
+      let c = 0;
+      for (let i = 0; i < arr.length; i++) {
+        c += arr[i];
+        if (years[i] >= fromYear && c > 0) return years[i] - fromYear + 1;
+      }
+      return null;
+    };
+
+    // ---------- forma de pagamento / usineiro ----------
+    const pc = inp.pctCash, pq = 1 - pc, pB = inp.pctSeniorB, pM = 1 - pB;
+    const cashAmt = pc * preco, sbAmt = pq * pB * preco, mzAmt = pq * pM * preco;
+    const sel = Y.map(() => ({ cash: 0, sb: 0, mz: 0, sa: 0, venda: 0 }));
+    m.forEach((r, k) => {
+      const i = yIdx(r.y);
+      const ip = Mo.ipca[k];
+      if (r.mIdx === acq) { sel[i].cash += cashAmt; sel[i].venda -= preco; }
+      if (r.mIdx >= acq) {
+        sel[i].sb += (Math.pow((1 + inp.remSeniorB) * (1 + ip), 1 / 12) - 1) * sbAmt;
+        sel[i].mz += (Math.pow((1 + inp.remMezanino) * (1 + ip), 1 / 12) - 1) * mzAmt;
+        sel[i].sa += (Math.pow((1 + inp.remCash) * (1 + ip), 1 / 12) - 1) * cashAmt;
+      }
+    });
+    ann.forEach(r => {
+      const dec = r.y * 12 + 11, i = r.i;
+      if (dec >= acq) {
+        sel[i].sb += ((1 + inp.remSeniorB) * (1 + A.ipca[i]) - 1) * sbAmt;
+        sel[i].mz += ((1 + inp.remMezanino) * (1 + A.ipca[i]) - 1) * mzAmt;
+        sel[i].sa += ((1 + inp.remCash) * (1 + A.ipca[i]) - 1) * cashAmt;
+      }
+    });
+    const sNom = sel.map(s => s.cash + s.sb + s.mz + s.venda);
+    const sReal = sNom.map((v, i) => v * fIpca[i]);
+
+    return {
+      years, rNom, gNom, perpFlag, ppa, gfLiq: gf, opexM0, tusdM0: inp.tusdg * inp.mw * 1000,
+      Y, pvExp, perpVal, pvPerp, ev, equity, evEbitda: ev / ebitda27, equityMW: equity / 1e6 / inp.mw, debt0,
+      preco, acqYear,
+      buyer: { flows: bNom, divs: buyer.map(b => b.div), irrNom: irr(bNom), irrReal: irr(bReal), payback: paybackFrom(bNom, acqYear) },
+      seller: { cashAmt, sbAmt, mzAmt, rows: sel, flows: sNom, irrNom: irr(sNom), irrReal: irr(sReal), payback: paybackFrom(sNom, acqYear) },
+      fIpca
+    };
+  }
+
+  root.UsinaEngine = { run, irr };
+  if (typeof module !== 'undefined') module.exports = root.UsinaEngine;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+const DATA = {"ann":{"year":[2026,2027,2028,2029,2030,2031,2032,2033,2034,2035,2036,2037,2038,2039,2040,2041,2042,2043,2044,2045],"cdi":[0.135,0.12,0.11,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1],"ipca":[0.05143686835182093,0.04018394696210059,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04],"days":[122,365,366,365,365,365,366,365,365,365,366,365,365,365,366,365,365,365,366,365],"bdays":[83,251,248,249,252,252,252,251,248,249,253,249,251,251,250,252,252,249,251,248],"ibs":[0,0.0891,0.0891,0.1057,0.1234,0.1234,0.1588,0.265,0.265,0.265,0.265,0.265,0.265,0.265,0.265,0.265,0.265,0.265,0.265,0.265],"pis":[0.0365,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},"mon":{"cdi":[0.135,0.135,0.135,0.135,0.12,0.12,0.12,0.12,0.12,0.12,0.12,0.12,0.12,0.12,0.12,0.12,0.11,0.11,0.11,0.11,0.11,0.11,0.11,0.11,0.11,0.11,0.11,0.11,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1],"ipca":[0.0426,0.0426,0.0426,0.0426,0.04018394696210059,0.04018394696210059,0.04018394696210059,0.04018394696210059,0.04018394696210059,0.04018394696210059,0.04018394696210059,0.04018394696210059,0.04018394696210059,0.04018394696210059,0.04018394696210059,0.04018394696210059,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04,0.04],"days":[30,31,30,31,31,28,31,30,31,30,31,31,30,31,30,31,31,29,31,30,31,30,31,31,30,31,30,31,31,28,31,30,31,30,31,31,30,31,30,31,31,28,31,30,31,30,31,31,30,31,30,31,31,28,31,30,31,30,31,31,30,31,30,31],"bdays":[21,21,19,22,20,18,22,21,20,22,22,22,21,20,20,23,21,19,23,18,22,21,21,23,20,21,19,20,22,18,21,21,21,21,22,23,19,22,19,20,22,20,19,21,22,19,23,22,21,23,19,21,22,18,21,20,21,20,23,21,22,23,19,22],"date":["2026-09","2026-10","2026-11","2026-12","2027-01","2027-02","2027-03","2027-04","2027-05","2027-06","2027-07","2027-08","2027-09","2027-10","2027-11","2027-12","2028-01","2028-02","2028-03","2028-04","2028-05","2028-06","2028-07","2028-08","2028-09","2028-10","2028-11","2028-12","2029-01","2029-02","2029-03","2029-04","2029-05","2029-06","2029-07","2029-08","2029-09","2029-10","2029-11","2029-12","2030-01","2030-02","2030-03","2030-04","2030-05","2030-06","2030-07","2030-08","2030-09","2030-10","2030-11","2030-12","2031-01","2031-02","2031-03","2031-04","2031-05","2031-06","2031-07","2031-08","2031-09","2031-10","2031-11","2031-12"]},"pipeline":[{"nome":"Salto Formoso","tipo":"CGH","mw":0.3,"gf":0.15,"redutor":0.2,"distribuidora":"CEMIG","tusdg":17.41976893453145,"tarifa":1101.5731707317073,"desagio":0.38,"fimContrato":"2035-08"},{"nome":"Capim","tipo":"CGH","mw":1,"gf":0.616,"redutor":0.2,"distribuidora":"ENEL RJ","tusdg":22.03601108033241,"tarifa":1226.436565096953,"desagio":0.31,"fimContrato":"2035-11"},{"nome":"Desidério 4A","tipo":"UFV","mw":0.5,"gf":0.1299,"redutor":0.15,"distribuidora":"Coelba","tusdg":32.43958953988746,"tarifa":877.73,"desagio":0.31,"fimContrato":"2035-10"},{"nome":"Desidério 4B","tipo":"UFV","mw":1,"gf":0.243,"redutor":0.15,"distribuidora":"Coelba","tusdg":32.43958953988746,"tarifa":877.73,"desagio":0.31,"fimContrato":"2035-11"},{"nome":"Desidério 3.2","tipo":"UFV","mw":1,"gf":0.259,"redutor":0.15,"distribuidora":"Coelba","tusdg":32.43958953988746,"tarifa":877.73,"desagio":0.31,"fimContrato":"2036-11"},{"nome":"Sepetiba 1a","tipo":"UFV","mw":1,"gf":0.2704,"redutor":0.15,"distribuidora":"Light","tusdg":12.423822714681442,"tarifa":1027.2930747922437,"desagio":0.27,"fimContrato":"2045-12"},{"nome":"Sepetiba 1b","tipo":"UFV","mw":1,"gf":0.2704,"redutor":0.15,"distribuidora":"Light","tusdg":12.423822714681442,"tarifa":1027.2930747922437,"desagio":0.27,"fimContrato":"2045-12"},{"nome":"Sepetiba 1c","tipo":"UFV","mw":0.5,"gf":0.1352,"redutor":0.15,"distribuidora":"Light","tusdg":12.423822714681442,"tarifa":1027.2930747922437,"desagio":0.27,"fimContrato":"2045-12"},{"nome":"Sepetiba 2a","tipo":"UFV","mw":1,"gf":0.2705,"redutor":0.15,"distribuidora":"Light","tusdg":12.423822714681442,"tarifa":1027.2930747922437,"desagio":0.27,"fimContrato":"2045-12"},{"nome":"Sepetiba 2b","tipo":"UFV","mw":1,"gf":0.2705,"redutor":0.15,"distribuidora":"Light","tusdg":12.423822714681442,"tarifa":1027.2930747922437,"desagio":0.27,"fimContrato":"2045-12"},{"nome":"Vila Nova","tipo":"CGH","mw":1.25,"gf":0.708,"redutor":0.2,"distribuidora":"COPEL","tusdg":9.9545159194282,"tarifa":768.02,"desagio":0.28,"fimContrato":"2031-08"},{"nome":"Invernada das Mulas","tipo":"CGH","mw":1.2,"gf":0.7000000000000001,"redutor":0.2,"distribuidora":"CELESC","tusdg":5.453392517438174,"tarifa":759.75,"desagio":0.315,"fimContrato":"2034-06"},{"nome":"Santa Paula","tipo":"CGH","mw":1.5,"gf":0.8,"redutor":0.2,"distribuidora":"Energisa SS","tusdg":13.17738791423002,"tarifa":814.24,"desagio":0.29,"fimContrato":"2028-10"},{"nome":"Limirim II","tipo":"UFV","mw":1,"gf":0.27,"redutor":0.15,"distribuidora":"Equatorial GO","tusdg":16.90708252111761,"tarifa":1100.9999999999998,"desagio":0.25,"fimContrato":"2045-12"},{"nome":"Limirim III","tipo":"UFV","mw":1,"gf":0.27,"redutor":0.15,"distribuidora":"Equatorial GO","tusdg":16.90708252111761,"tarifa":1100.9999999999998,"desagio":0.25,"fimContrato":"2045-12"},{"nome":"Cristino Castro I","tipo":"UFV","mw":0.9,"gf":0.21899999999999997,"redutor":0.15,"distribuidora":"Equatorial PI","tusdg":30.66893039049236,"tarifa":1088.0346349745332,"desagio":0.3,"fimContrato":"2045-03"},{"nome":"Solis I","tipo":"UFV","mw":0.99,"gf":0.257,"redutor":0.15,"distribuidora":"Equatorial AL","tusdg":16.989607777405297,"tarifa":1141.6828695943682,"desagio":0.3,"fimContrato":"2045-03"},{"nome":"Nova Aurora","tipo":"UFV","mw":3,"gf":0.6830000000000002,"redutor":0.15,"distribuidora":"CELESC","tusdg":5.453392517438174,"tarifa":759.75,"desagio":0.32,"fimContrato":"2035-08"}]};
+const $ = id => document.getElementById(id);
+const nf = (d) => new Intl.NumberFormat('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d });
+const f0 = nf(0), f1 = nf(1), f2 = nf(2);
+const mi = v => f2.format(v / 1e6);
+const mil = v => (Math.abs(v) < 500 ? '–' : f0.format(v / 1e3));
+const pct = (v, d = 1) => v == null ? 'n/d' : nf(d).format(v * 100) + '%';
+const MESES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const mlabel = s => { const [y, m] = s.split('-'); return MESES[+m - 1] + '/' + y.slice(2); };
+
+const DEF = { degradacao: 0.8, custoUFV: 12.5, custoCGH: 19.3, dentroFundo: '1', perpetuidade: 'auto', redutorPerp: 75, gReal: 0,
+  divida: 0, dataFinal: '2045-07', prepagamento: '0', taxaReal: 18, dataAquisicao: '2027-07', precoModo: 'justo', preco: '',
+  pctCash: 10, remCash: 10, pctSeniorB: 80, remSeniorB: 8, remMezanino: 10 };
+const S = {};
+
+// usinas
+const sel = $('usina');
+DATA.pipeline.forEach((p, i) => { const o = document.createElement('option'); o.value = i; o.textContent = `${p.nome} · ${p.tipo} ${f2.format(p.mw)} MW`; sel.appendChild(o); });
+const sp = DATA.pipeline.findIndex(p => p.nome === 'Santa Paula'); sel.value = sp >= 0 ? sp : 0;
+// datas de fechamento
+DATA.mon.date.forEach(d => { const o = document.createElement('option'); o.value = d; o.textContent = mlabel(d); $('dataAquisicao').appendChild(o); });
+
+function loadPlant(i) {
+  const p = DATA.pipeline[i];
+  Object.assign(S, DEF, { tipo: p.tipo, mw: p.mw, gf: +p.gf.toFixed(4), redutor: +(p.redutor * 100).toFixed(2), tarifa: +p.tarifa.toFixed(2),
+    desagio: +(p.desagio * 100).toFixed(2), tusdg: +p.tusdg.toFixed(2), fim: p.fimContrato, distribuidora: p.distribuidora });
+  S.custo = p.tipo === 'UFV' ? DEF.custoUFV : DEF.custoCGH;
+  S.tusdgExact = p.tusdg; S.tarifaExact = p.tarifa; S.gfExact = p.gf;
+  paint();
+}
+function paint() {
+  ['mw','gf','redutor','degradacao','tarifa','desagio','tusdg','custo','taxaReal','preco','pctCash','remCash','pctSeniorB','remSeniorB','remMezanino','redutorPerp','gReal','divida','dataFinal','dataAquisicao']
+    .forEach(k => { $(k).value = S[k]; });
+  ['tipo','precoModo','dentroFundo','perpetuidade','prepagamento'].forEach(k => {
+    $(k).querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === String(S[k]))));
+  });
+  $('precoBox').hidden = S.precoModo !== 'neg';
+  $('degradacao').disabled = S.tipo !== 'UFV';
+  calc();
+}
+document.querySelectorAll('aside input, aside select').forEach(el => el.addEventListener('input', () => {
+  const k = el.id; if (el.disabled) return;
+  S[k] = el.type === 'number' ? (el.value === '' ? '' : +el.value) : el.value;
+  if (k === 'tusdg') S.tusdgExact = null; if (k === 'tarifa') S.tarifaExact = null; if (k === 'gf') S.gfExact = null;
+  if (k === 'precoModo') return; calc();
+}));
+['tipo','precoModo','dentroFundo','perpetuidade','prepagamento'].forEach(k => $(k).addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  S[k] = b.dataset.v;
+  if (k === 'tipo') S.custo = S.tipo === 'UFV' ? DEF.custoUFV : DEF.custoCGH;
+  if (k === 'precoModo' && S.precoModo === 'neg' && (S.preco === '' || S.preco == null)) S.preco = +(lastEq / 1e6).toFixed(2);
+  paint();
+}));
+sel.addEventListener('change', () => loadPlant(+sel.value));
+$('reset').addEventListener('click', () => loadPlant(+sel.value));
+
+function inputs(over = {}) {
+  const n = (v, d = 0) => (v === '' || v == null || isNaN(v)) ? d : +v;
+  const o = {
+    tipo: S.tipo, mw: n(S.mw), gf: S.gfExact != null ? S.gfExact : n(S.gf), redutor: n(S.redutor) / 100, degradacao: n(S.degradacao) / 100,
+    tarifa: S.tarifaExact != null ? S.tarifaExact : n(S.tarifa), desagio: n(S.desagio) / 100, tusdg: S.tusdgExact != null ? S.tusdgExact : n(S.tusdg),
+    custoUFV: S.tipo === 'UFV' ? n(S.custo) : DEF.custoUFV, custoCGH: S.tipo === 'CGH' ? n(S.custo) : DEF.custoCGH,
+    dentroFundo: +S.dentroFundo, divida: n(S.divida), prepagamento: +S.prepagamento, dataFinal: S.dataFinal || '2045-07', indexador: 'CDI',
+    taxaReal: n(S.taxaReal) / 100, perpetuidade: S.perpetuidade === 'auto' ? null : +S.perpetuidade, redutorPerp: n(S.redutorPerp) / 100, gReal: n(S.gReal) / 100,
+    dataAquisicao: S.dataAquisicao, preco: S.precoModo === 'neg' && S.preco !== '' ? n(S.preco) : null,
+    pctCash: n(S.pctCash) / 100, remCash: n(S.remCash) / 100, pctSeniorB: n(S.pctSeniorB) / 100, remSeniorB: n(S.remSeniorB) / 100, remMezanino: n(S.remMezanino) / 100
+  };
+  return Object.assign(o, over);
+}
+
+let lastEq = 0, lastR = null;
+function calc() {
+  const inp = inputs();
+  let r;
+  try { r = UsinaEngine.run(inp, DATA); } catch (e) { console.error(e); return; }
+  lastEq = r.equity; lastR = r;
+  $('pctMez').value = f0.format(100 - (+S.pctSeniorB || 0));
+  $('gfLiq').textContent = `Garantia física líquida: ${nf(3).format(r.gfLiq)} MWm · ${f0.format(r.gfLiq * 8760)} MWh/ano`;
+  $('ppaHint').textContent = `PPA equivalente: R$ ${f2.format(r.ppa)}/MWh · TUSDg R$ ${f0.format(r.tusdM0)}/mês · despesas R$ ${f0.format(-r.opexM0)}/mês`;
+  const p = DATA.pipeline[+sel.value];
+  $('headLbl').textContent = `${p.nome} · ${S.tipo} · ${p.distribuidora} · fechamento ${mlabel(S.dataAquisicao)}`;
+  const pill = $('ppaPill');
+  if (S.fim && S.fim < '2045-12') { pill.hidden = false; pill.className = 'pill warn'; pill.textContent = `PPA vigente até ${mlabel(S.fim)} · projeção assume renovação nas mesmas condições`; }
+  else pill.hidden = true;
+
+  const irr = r.buyer.irrReal, tr = inp.taxaReal;
+  const irrCls = irr == null ? 'bad' : irr >= tr ? 'good' : irr >= tr - 0.03 ? 'warn' : 'bad';
+  const irrTxt = irr == null ? 'sem TIR' : irr >= tr ? 'acima da taxa' : 'abaixo da taxa';
+  const prem = (r.preco - r.equity) / r.equity;
+  $('terms').innerHTML = [
+    ['Valor justo do equity', 'R$ ' + mi(r.equity) + ' mi', `EV R$ ${mi(r.ev)} mi · perpetuidade R$ ${mi(r.pvPerp)} mi`],
+    ['Preço considerado', 'R$ ' + mi(r.preco) + ' mi', S.precoModo === 'neg' ? `${prem >= 0 ? '+' : ''}${pct(prem)} sobre o valor justo` : 'igual ao valor justo'],
+    ['TIR real do comprador', pct(irr), `<span class="pill ${irrCls}">${irrTxt} de ${pct(tr)}</span> · nominal ${pct(r.buyer.irrNom)}`],
+    ['Payback', r.buyer.payback ? r.buyer.payback + (r.buyer.payback > 1 ? ' anos' : ' ano') : '> 2045', 'anos-calendário até o caixa acumulado ficar positivo'],
+    ['EV / EBITDA 2027', f1.format(r.evEbitda) + 'x', `EBITDA 2027 R$ ${mi(r.Y[1].ebitda)} mi`],
+    ['Equity por MW', 'R$ ' + mi(r.equity / inp.mw) + ' mi', `taxa nominal ${pct(r.rNom)} · ${r.perpFlag ? 'com' : 'sem'} perpetuidade`]
+  ].map(([l, v, s]) => `<div class="term"><span class="lbl">${l}</span><span class="v">${v}</span><span class="s">${s}</span></div>`).join('');
+
+  drawChart(r);
+  sens(inp, r);
+  seller(r, inp);
+  proj(r);
+}
+
+function drawChart(r) {
+  const box = $('chart'); const W = Math.max(300, box.clientWidth || 700), H = W < 520 ? 240 : 280;
+  const yrs = r.years.map((y, i) => ({ y, i })).filter(o => o.y >= r.acqYear);
+  const divs = yrs.map(o => r.buyer.divs[o.i]);
+  const cup = yrs.map(o => { const s = r.seller.rows[o.i]; return s.sb + s.mz + s.sa; });
+  const max = Math.max(1, ...divs, ...cup);
+  const step = niceStep(max / 4); const top = Math.ceil(max / step) * step;
+  const L = 44, R = 8, T = 10, B = 26, pw = W - L - R, ph = H - T - B;
+  const bw = pw / yrs.length; const x = i => L + i * bw; const y = v => T + ph - (v / top) * ph;
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Dividendos e remuneração das cotas por ano">`;
+  for (let v = 0; v <= top + 1e-6; v += step) {
+    s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/>`;
+    s += `<text x="${L - 6}" y="${y(v) + 4}" text-anchor="end" font-size="10" fill="var(--muted)" font-family="Montserrat, sans-serif">${f0.format(v / 1e3)}</text>`;
+  }
+  divs.forEach((d, i) => { const h = Math.max(0, (d / top) * ph); s += `<rect x="${x(i) + bw * 0.18}" y="${T + ph - h}" width="${bw * 0.64}" height="${h}" fill="var(--bar)"><title>${yrs[i].y}: R$ ${f0.format(d / 1e3)} mil</title></rect>`; });
+  const pts = cup.map((c, i) => `${x(i) + bw / 2},${y(c)}`).join(' ');
+  s += `<polyline points="${pts}" fill="none" stroke="var(--bar2)" stroke-width="2"/>`;
+  cup.forEach((c, i) => { s += `<circle cx="${x(i) + bw / 2}" cy="${y(c)}" r="2.5" fill="var(--bar2)"/>`; });
+  const every = bw < 30 ? (bw < 18 ? 4 : 2) : 1;
+  yrs.forEach((o, i) => { if (i % every === 0) s += `<text x="${x(i) + bw / 2}" y="${H - 8}" text-anchor="middle" font-size="10" fill="var(--muted)" font-family="Montserrat, sans-serif">${String(o.y).slice(2)}</text>`; });
+  s += `</svg>`;
+  box.innerHTML = s;
+  const full = yrs.slice(1).map((o, k) => divs[k + 1] / (cup[k + 1] || 1)).filter(v => isFinite(v));
+  $('cov').textContent = full.length ? `Cobertura mínima ${f1.format(Math.min(...full))}x a partir do primeiro ano cheio` : '';
+}
+function niceStep(raw) { const p = Math.pow(10, Math.floor(Math.log10(raw))); const n = raw / p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * p; }
+
+function sens(inp, r) {
+  const taxas = [-4, -2, 0, 2, 4].map(d => inp.taxaReal + d / 100);
+  const des = [-4, -2, 0, 2, 4].map(d => inp.desagio + d / 100);
+  let h = `<thead><tr><th>Taxa \\ Deságio</th>${des.map(d => `<th>${pct(d, 1)}</th>`).join('')}</tr></thead><tbody>`;
+  taxas.forEach((t, i) => {
+    h += `<tr><td>${pct(t, 1)}</td>`;
+    des.forEach((d, j) => {
+      const v = UsinaEngine.run(Object.assign({}, inp, { taxaReal: t, desagio: d, preco: null }), DATA).equity;
+      const cls = i === 2 && j === 2 ? 'base' : v < r.equity * 0.9 ? 'lo' : v > r.equity * 1.1 ? 'hi' : '';
+      h += `<td class="${cls}">${f2.format(v / 1e6)}</td>`;
+    });
+    h += '</tr>';
+  });
+  $('sensA').innerHTML = h + '</tbody>';
+  const base = r.preco / 1e6, steps = [-20, -10, 0, 10, 20];
+  let g = `<thead><tr><th>Preço (R$ mi)</th><th>Δ</th><th>TIR real</th><th>TIR nominal</th></tr></thead><tbody>`;
+  steps.forEach(s => {
+    const pr = base * (1 + s / 100);
+    const x = UsinaEngine.run(Object.assign({}, inp, { preco: pr }), DATA).buyer;
+    const cls = s === 0 ? 'base' : '';
+    g += `<tr><td class="${cls}">${f2.format(pr)}</td><td class="${cls}">${s > 0 ? '+' : ''}${s}%</td><td class="${cls} ${s ? (x.irrReal >= inp.taxaReal ? 'hi' : 'lo') : ''}">${pct(x.irrReal)}</td><td class="${cls}">${pct(x.irrNom)}</td></tr>`;
+  });
+  $('sensB').innerHTML = g + '</tbody>';
+}
+
+function seller(r, inp) {
+  const P = r.preco, parts = [['Cash no fechamento', r.seller.cashAmt, 'var(--fg)', `custo IPCA+${f1.format(inp.remCash * 100)}% ao fundo`],
+    ['Cotas Sênior B', r.seller.sbAmt, 'var(--muted)', `IPCA+${f1.format(inp.remSeniorB * 100)}% a.a.`],
+    ['Cotas Mezanino', r.seller.mzAmt, 'var(--faint)', `IPCA+${f1.format(inp.remMezanino * 100)}% a.a.`]];
+  $('stack').innerHTML = parts.map(p => `<i style="width:${P ? p[1] / P * 100 : 0}%;background:${p[2]}"></i>`).join('');
+  $('split').innerHTML = parts.map(p => `<div><span class="lbl">${p[0]}</span><span class="v">R$ ${mi(p[1])} mi</span><span class="s">${pct(P ? p[1] / P : 0, 0)} do preço · ${p[3]}</span></div>`).join('');
+  $('sellerNote').innerHTML = `<b>TIR real do vendedor ${pct(r.seller.irrReal)}</b> (nominal ${pct(r.seller.irrNom)}), payback de ${r.seller.payback ? r.seller.payback + ' anos' : 'mais de 2045'}. O cálculo considera a usina entregue pelo preço e a remuneração recebida até 2045; o principal das cotas fica no fundo, então a TIR fica abaixo da remuneração contratada.`;
+}
+
+function proj(r) {
+  const rows = [
+    ['Energia (MWh)', y => f0.format(y.energia), 'sub'],
+    ['Receita bruta', y => mil(y.rec)], ['(−) TUSDg', y => mil(y.tus)], ['(−) Tributos sobre receita', y => mil(y.ded)],
+    ['(−) Despesas', y => mil(y.opex)], ['EBITDA', y => mil(y.ebitda), 'em'], ['(−) Juros', y => mil(-y.juros)],
+    ['(−) IRPJ e CSLL', y => mil(y.irpj + y.csll)], ['Lucro líquido', y => mil(y.ni), 'em'],
+    ['FCFF', y => mil(y.fcff), 'em'], ['Valor presente do FCFF', y => mil(y.pv), 'sub'], ['Dividendos', y => mil(y.div), 'em']];
+  let h = `<thead><tr><th>R$ mil</th>${r.Y.map(y => `<th>${y.y}</th>`).join('')}</tr></thead><tbody>`;
+  rows.forEach(([l, fn, c]) => { h += `<tr class="${c || ''}"><td>${l}</td>${r.Y.map(y => `<td>${fn(y)}</td>`).join('')}</tr>`; });
+  $('proj').innerHTML = h + '</tbody>';
+}
+
+let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => lastR && drawChart(lastR), 120); });
+loadPlant(+sel.value);
+</script>
+
+</body>
+</html>
